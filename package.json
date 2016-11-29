@@ -4,8 +4,7 @@
   "description": "Ants Colony Optimization Demo",
   "main": "index.js",
   "dependencies": {
-    "d3": "^4.3.0",
-    "jquery": "^3.1.1"
+    "d3": "^4.3.0"
   },
   "devDependencies": {
     "babel-core": "^6.18.0",

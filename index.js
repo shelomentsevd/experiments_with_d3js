@@ -344,9 +344,11 @@ var data = {
   ]
 };
 
-$(window).ready( function() {
-    playground.width = $(this).width();
-    playground.height = $(this).height();
+window.onload = function initialization() {
+    const bodyRect = document.querySelector('body').getBoundingClientRect();
+    playground.width = bodyRect.width;
+    playground.height = bodyRect.height;
+
     svg = d3.select("#playground").append("svg");
 
     playground.sim = d3.forceSimulation()
@@ -404,10 +406,15 @@ $(window).ready( function() {
       d.fx = null;
       d.fy = null;
     }
-} );
+};
 
 
-$(window).resize( function() {
-    playground.width = $(this).width();
-    playground.height = $(this).height();
-});
+window.onresize = function resize() {
+    const bodyRect = document.querySelector('body').getBoundingClientRect();
+
+    playground.width = bodyRect.width;
+    playground.height = bodyRect.height;
+    
+    playground.sim.force('center', d3.forceCenter(playground.width / 2, playground.height / 2));
+    playground.sim.alphaTarget(0.3).restart();
+};
