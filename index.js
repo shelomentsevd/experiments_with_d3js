@@ -46,6 +46,14 @@ window.onload = function initialization() {
                                      .on('start', dragstarted)
                                      .on('drag', dragged)
                                      .on('end', dragended));
+    // Click event
+    svg.on('click', function() { 
+        console.log(d3.event);
+    });
+    // Click on node event
+    node.on('click', function(d) {
+        console.log(d);
+    });
 
     playground.sim.nodes(data.nodes)
                   .on('tick', ticked);
