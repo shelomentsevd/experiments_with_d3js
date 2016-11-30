@@ -1,21 +1,9 @@
 import * as d3 from "d3";
 
-var svg;
+var svg, simulation;
 var playground = {
     width: 0,
     height: 0
-};
-
-var data = {
-  "nodes": [
-    {"id": 1},
-    {"id": 2},
-    {"id": 3},
-  ],
-  "links": [
-    {"source": 1, "target": 2},
-    {"source": 3, "target": 2},
-  ]
 };
 
 window.onload = function initialization() {
@@ -23,42 +11,67 @@ window.onload = function initialization() {
     playground.width = bodyRect.width;
     playground.height = bodyRect.height;
 
-    svg = d3.select("#playground").append("svg");
+    var data = {
+      "nodes": [
+        {"id": 1},
+        {"id": 2},
+        {"id": 3},
+      ],
+      "links": [
+        {"source": 1, "target": 2},
+        {"source": 3, "target": 2},
+      ]
+    };    
 
-    playground.sim = d3.forceSimulation()
-                       .force('link', d3.forceLink().id(function(item){ return item.id; }))
-                       .force('charge', d3.forceManyBody())
-                       .force('center', d3.forceCenter(playground.width / 2, playground.height / 2));
+    svg = d3.select("#playground")
+            .append("svg")
+            .on("dblclick", function() {
+                console.log(d3.event);
+                data.nodes.push({ id: 4, cx: d3.event.clientX, cy: d3.event.clientY });
+                //data.links.push({"source": 5, "target": 4});
+                restart();
+            });
+
+    simulation = d3.forceSimulation()
+                        .force('link', d3.forceLink().id(function(item){ return item.id; }))
+                        .force('charge', d3.forceManyBody())
+                        .force('center', d3.forceCenter(playground.width / 2, playground.height / 2))
+                        .on("tick", ticked);
 
     var link = svg.append("g")
-                             .attr("class", "links")
-                             .selectAll("line")
-                             .data(data.links)
-                             .enter().append("line");
+                    .attr("class", "links")
+                    .selectAll("line");
 
     var node = svg.append("g")
-                             .attr("class", "nodes")
-                             .selectAll("circle")
-                             .data(data.nodes)
-                             .enter().append("circle")
-                             .attr("r", 2.5)
-                             .call(d3.drag()
-                                     .on('start', dragstarted)
-                                     .on('drag', dragged)
-                                     .on('end', dragended));
-    // Click event
-    svg.on('click', function() { 
-        console.log(d3.event);
-    });
-    // Click on node event
-    node.on('click', function(d) {
-        console.log(d);
-    });
+                    .attr("class", "nodes")
+                    .selectAll("circle");
 
-    playground.sim.nodes(data.nodes)
-                  .on('tick', ticked);
+    restart();
 
-    playground.sim.force('link').links(data.links);
+    function restart() {
+
+        // Update for links
+        link = link.data(data.links, function(d) { return d.source.id + "-" + d.target.id; });
+        link.exit().remove();
+        link = link.enter().append("line").merge(link);
+
+        // Update for nodes
+        node = node.data(data.nodes, function(d) { return d.id;});
+        node.exit().remove();
+        node = node.enter()
+                    .append("circle").attr("r", 2.5).call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended))
+                    .on("click", function(d) {
+                        console.log(d);
+                    }).merge(node);
+
+        // Update and restart simulation
+        simulation.nodes(data.nodes);
+        simulation.force("link").links(data.links);
+        simulation.alpha(1).restart();
+    }
 
     function ticked() {
         link
@@ -73,7 +86,7 @@ window.onload = function initialization() {
     }
 
     function dragstarted(d) {
-      if (!d3.event.active) playground.sim.alphaTarget(0.3).restart();
+      if (!d3.event.active) simulation.alphaTarget(1).restart();
       d.fx = d.x;
       d.fy = d.y;
     }
@@ -84,7 +97,7 @@ window.onload = function initialization() {
     }
 
     function dragended(d) {
-      if (!d3.event.active) playground.sim.alphaTarget(0);
+      if (!d3.event.active) simulation.alphaTarget(0);
       d.fx = null;
       d.fy = null;
     }
@@ -97,6 +110,6 @@ window.onresize = function resize() {
     playground.width = bodyRect.width;
     playground.height = bodyRect.height;
 
-    playground.sim.force('center', d3.forceCenter(playground.width / 2, playground.height / 2));
-    playground.sim.alphaTarget(0.3).restart();
+    simulation.force('center', d3.forceCenter(playground.width / 2, playground.height / 2));
+    simulation.alphaTarget(1).restart();
 };
