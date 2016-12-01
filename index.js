@@ -27,8 +27,7 @@ window.onload = function initialization() {
             .append("svg")
             .on("dblclick", function() {
                 console.log(d3.event);
-                data.nodes.push({ id: 4, cx: d3.event.clientX, cy: d3.event.clientY });
-                //data.links.push({"source": 5, "target": 4});
+                data.nodes.push({ id: 4, x: d3.event.clientX, y: d3.event.clientY });
                 restart();
             });
 
